@@ -1,2 +1,2 @@
 # FusedDL
-Embedded systems matrix computation library
+Embedded systems AI inference library
