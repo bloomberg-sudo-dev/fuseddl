@@ -35,6 +35,36 @@ int mat_mul(const int a[3][3], const int b[3][3], int c[3][3]) // A and B are co
     return 0; // success
 }
 
+int opti_mat_mul1(const int a[3][3], 
+                 const int b_in[3][3], 
+                 int c[3][3]) // optimized matrix multiplication with loop unrolling
+{
+    int b[3][3]; // local copy of matrix B
+    int f, co, j, k, l;
+    int suma;
+    // transpose matrix B into copy of B for better cache performance
+    for (f = 0; f < 3; f++) {
+        for (co = f + 1; co < 3; co++) {
+            b[f][co] = b_in[co][f];
+            b[co][f] = b_in[f][co];
+        }
+    }
+
+    // multiply matrix A by transposed B
+    for (j = 0; j < 3; j++) { // iterate over rows of A
+        for (k = 0; k < 3; k++) { // iterate over rows of transposed B (original columns of B)
+            suma = 0; // initialize sum for dot product
+            for (l = 0; l < 3; l += 2) { // unrolled loop, process two elements at a time
+                suma += a[j][l] * b[k][l]; // first element
+                if (l + 1 < 3) { // check bounds for second element
+                    suma += a[j][l + 1] * b[k][l + 1]; // second element
+                }
+            }
+            c[j][k] = suma; // store result in C
+        }
+    }
+}
+
 int add_mat(const int a[3][3], const int b[3][3], int c[3][3]) // add two 3x3 matrices
 {
     int i, j;
