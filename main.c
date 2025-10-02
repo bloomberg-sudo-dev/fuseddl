@@ -19,8 +19,6 @@ Routines:
 #include <math.h>
 #include <time.h>
 
-// matrix multiplication function
-
 int mat_mul(const int a[3][3], const int b[3][3], int c[3][3]) // A and B are constant input matrices, C is the output matrix
 {
     int i, j, k;
@@ -102,7 +100,17 @@ int forward_pass(const int x[3][1], // 1 dimensional input vector (3x1 matrix wi
     return 0; // success
 }
 
-int print_mat(int c[3][3]) // print a 3x3 matrix
+int loss_mse(const int yhat[3][1], const int y[3][1]) // mean squared error loss (difference between predicted and true values)
+{
+    int i;
+    int loss = 0;
+    for (i = 0; i < 3; i++) {
+        loss += (yhat[i][0] - y[i][0]) * (yhat[i][0] - y[i][0]); // accumulate squared errors
+    }
+    return loss / 3; // return mean
+}
+
+int print_mat(int c[3][1]) // print a 3x1 matrix
 {
     int i, j;
     for (i = 0; i < 3; i++) {
@@ -115,11 +123,22 @@ int print_mat(int c[3][3]) // print a 3x3 matrix
 }
 
 int main(void){
+    clock_t start, end; // timer variables
+    double cpu_time_used; // time used variable
+
+    start = clock(); // start timer
+
     int a[3][3] = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
     int b[3][3] = {{9, 8, 7}, {6, 5, 4}, {3, 2, 1}};
     int c[3][3]; // resulting matrix
 
     // mat_mul(a, b, c);
     // print_mat(c);
+
+    end = clock(); // end timer
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+    printf("Exec_time: %f seconds\n", cpu_time_used);
+
     return 0;
 }
