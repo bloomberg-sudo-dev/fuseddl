@@ -140,6 +140,72 @@ int loss_mse(const int yhat[3][1], const int y[3][1]) // mean squared error loss
     return loss / 3; // return mean
 }
 
+float sigmoid_deriv(float x) // derivative of sigmoid function
+{
+    return x * (1 - x); // derivative formula
+}
+
+void backward_and_update(const int x[3][1], 
+                         const int y[3][1], 
+                         int w[3][3], 
+                         int b[3][1], 
+                         int w2[3][3], 
+                         int b2[3][1], 
+                         int h[3][1], 
+                         int yhat[3][1], 
+                         float eta, 
+                         float alpha) // backpropagation and parameter update
+{
+    // Compute output layer error
+    int output_errors[3][1];
+    for (int i = 0; i < 3; i++) {
+        output_errors[i][0] = y[i][0] - yhat[i][0]; // error = true - predicted
+    }
+
+    // Compute gradients for output layer
+    int gradients2[3][1];
+    for (int i = 0; i < 3; i++) {
+        gradients2[i][0] = output_errors[i][0] * sigmoid_deriv(yhat[i][0]); // gradient = error * sigmoid_derivative
+        gradients2[i][0] *= eta; // scale by learning rate
+    }
+
+    // Update weights and biases for output layer
+    int h_T[1][3]; // transpose of hidden layer activations
+    for (int i = 0; i < 3; i++) {
+        h_T[0][i] = h[i][0];
+    }
+    int weight_deltas2[3][3];
+    mat_mul(h_T, gradients2, weight_deltas2); // weight_deltas = h^T * gradients
+    add_mat(w2, weight_deltas2, w2); // update weights
+    add_mat(b2, gradients2, b2); // update biases
+
+    // Compute hidden layer error
+    int w2_T[3][3]; // transpose of output layer weights
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            w2_T[j][i] = w2[i][j];
+        }
+    }
+    int hidden_errors[3][1];
+    mat_mul(w2_T, output_errors, hidden_errors); // hidden_errors = w2^T * output_errors
+
+    // Compute gradients for hidden layer
+    int gradients1[3][1];
+    for (int i = 0; i < 3; i++) {
+        gradients1[i][0] = hidden_errors[i][0] * sigmoid_deriv(h[i][0]); // gradient = error * sigmoid_derivative
+        gradients1[i][0] *= eta; // scale by learning rate
+    }
+    // Update weights and biases for hidden layer
+    int x_T[1][3]; // transpose of input
+    for (int i = 0; i < 3; i++) {
+        x_T[0][i] = x[i][0];
+    }
+    int weight_deltas1[3][3];
+    mat_mul(x_T, gradients1, weight_deltas1); // weight_deltas = x^T * gradients
+    add_mat(w, weight_deltas1, w); // update weights
+    add_mat(b, gradients1, b); // update biases
+}
+
 int print_mat(int c[3][1]) // print a 3x1 matrix
 {
     int i, j;
